@@ -1,5 +1,6 @@
+
 /*
- * Edit Clone check 1
+ * Edit Clone check 2
  *  This sketch sends data via HTTP GET requests to data.sparkfun.com service.
  *
  *  You need to get streamId and privateKey at data.sparkfun.com and paste them
@@ -24,6 +25,11 @@
 #include <WiFiManager.h>  
 #include <dht.h>
 
+//OLED LIB
+#include <SPI.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
 int photoSensorPin = 0;
 double photoSensorData=0;
 double temperatureC=0;
@@ -33,6 +39,14 @@ int PostDataCount=0;
 int delayBetweenSend=5000;
 int SecondMultiplier= 60;
 #define dht_apin 16 // Analog Pin sensor is connected to
+
+//OLED INIT
+#define OLED_SDA   D7  //MOSI
+#define OLED_SCL   D5  //CLK
+#define OLED_DC    D4  //
+#define OLED_CS    12  // no need of connecting, just use some pin number
+#define OLED_RESET D3  //RES
+Adafruit_SSD1306 display(OLED_SDA,OLED_SCL, OLED_DC, OLED_RESET, OLED_CS);      // constructor to call OLED display using adafruit library
 
 dht DHT;
 
@@ -65,6 +79,26 @@ void setup() {
     
     //if you get here you have connected to the WiFi
     Serial.println("***********************Connected to WiFi*********************** ");
+
+    display.begin(SSD1306_SWITCHCAPVCC);   // since i am using adafruit library, i have to display their logo
+    display.display();
+    delay(500);
+    // Clear the buffer.
+    display.clearDisplay();
+     display.setTextColor(WHITE);
+  display.setTextSize(1);
+  display.setCursor(25,11);
+  display.print("Electromania");
+  //  display.print("Temp. reading");
+  display.display();
+  delay(2000);
+  display.clearDisplay();
+  display.setCursor(0,3);
+  display.print("Measuring Temperature  using DS18B20 and     ESP8266 NodeMCU");
+  display.display();
+  delay(4000);
+  display.clearDisplay();
+  // OPTIONAL part ends here
 }
 
 
