@@ -41,11 +41,11 @@ int SecondMultiplier= 60;
 #define dht_apin 16 // Analog Pin sensor is connected to
 
 //OLED INIT
-#define OLED_SDA   D7  //MOSI
-#define OLED_SCL   D5  //CLK
-#define OLED_DC    D4  //
+#define OLED_SDA   D7  //MOSI -- D1
+#define OLED_SCL   D5  //CLK  -- D0
+#define OLED_DC    D4  //     --DC
 #define OLED_CS    12  // no need of connecting, just use some pin number
-#define OLED_RESET D3  //RES
+#define OLED_RESET D3  //RES  --RES
 Adafruit_SSD1306 display(OLED_SDA,OLED_SCL, OLED_DC, OLED_RESET, OLED_CS);      // constructor to call OLED display using adafruit library
 
 dht DHT;
@@ -61,7 +61,10 @@ void setup() {
       pinMode(16,OUTPUT); 
       pinMode(5,OUTPUT); 
       pinMode(4,OUTPUT);
- 
+
+      display.begin(SSD1306_SWITCHCAPVCC);   // since i am using adafruit library, i have to display their logo
+      display.display();
+      delay(500);
     //reset saved settings
     //wifiManager.resetSettings();
     
@@ -75,30 +78,15 @@ void setup() {
      wifiManager.autoConnect("AutoConnectAP");
     //or use this for auto generated name ESP + ChipID
     //wifiManager.autoConnect();
-
+    // Clear the buffer.
+    ShowMessageInOLED("Connected to Wifi", 1, 0, 3);
+    delay(2000);
     
     //if you get here you have connected to the WiFi
     Serial.println("***********************Connected to WiFi*********************** ");
 
-    display.begin(SSD1306_SWITCHCAPVCC);   // since i am using adafruit library, i have to display their logo
-    display.display();
-    delay(500);
-    // Clear the buffer.
-    display.clearDisplay();
-     display.setTextColor(WHITE);
-  display.setTextSize(1);
-  display.setCursor(25,11);
-  display.print("Electromania");
-  //  display.print("Temp. reading");
-  display.display();
-  delay(2000);
-  display.clearDisplay();
-  display.setCursor(0,3);
-  display.print("Measuring Temperature  using DS18B20 and     ESP8266 NodeMCU");
-  display.display();
-  delay(4000);
-  display.clearDisplay();
-  // OPTIONAL part ends here
+    ShowMessageInOLED("Measuring Temperature and Humidity", 1, 0, 3);
+    delay(4000);
 }
 
 
@@ -119,6 +107,8 @@ void loop() {
     PostDataCount=PostDataCount+1;
     delay(delayBetweenSend); // Second     
     digitalWrite(LED_BUILTIN, LOW);
+    
+    ShowMessageInOLED(String(PostDataCount - 60), 3, 20, 3);
     return;
    }
    else{
@@ -184,7 +174,6 @@ void registerDevice(WiFiClient client, String url)
 String sendSensorData(WiFiClient client, String url)
     {   
       CollectSensorData();//Collection before send
-     
       String line="NULL";   
       String data="[";
         data= data+"{'DeviceId':"+DeviceId+",'SensorId':1,";
@@ -192,8 +181,11 @@ String sendSensorData(WiFiClient client, String url)
         data= data+"{'DeviceId':"+DeviceId+",'SensorId':2,";
         data= data+"'Value':'"+temperatureC+"'},";
         data= data+"]";
+        String oldeData="Humidity :"+String(photoSensorData)+"Temp : "+String(temperatureC);
+        ShowMessageInOLED(oldeData, 1, 0, 3);        
+        delay(4000);
       Serial.println("####"+data);
-    client.print(String("POST ") + url + " HTTP/1.1\r\n" +
+      client.print(String("POST ") + url + " HTTP/1.1\r\n" +
                  "Host: " + host + "\r\n" +
                  //"Connection: close\r\n" +
                  "Content-Type: application/json\r\n" +
@@ -240,5 +232,14 @@ String sendSensorData(WiFiClient client, String url)
       photoSensorData=DHT.humidity;
       temperatureC=DHT.temperature;
     }
-    
+    void ShowMessageInOLED(String Message, int Size, int CurserX, int CurserY){
+        // Clear the buffer.
+        display.clearDisplay();
+        display.setTextColor(WHITE);
+        display.setTextSize(Size);
+        display.setCursor(CurserX,CurserY);
+        display.print(Message);
+        display.display();
+      
+    }
  

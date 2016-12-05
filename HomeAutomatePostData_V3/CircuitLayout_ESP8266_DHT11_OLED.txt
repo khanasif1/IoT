@@ -1,0 +1,14 @@
+DHT11  ESP8266
+-----  ------
+VCC   = 3.3
+GND   = GND
+Data  = D0
+
+OLED  ESP8266
+----  -------
+GND = GND
+VCC = 3.3
+D0  = D5
+D1  = D7
+RES = D3
+DC  = D4
