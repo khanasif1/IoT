@@ -28,7 +28,7 @@
 int photoSensorPin = 0;
 double humiditySensorData=0;
 double temperatureC=0;
-const char* host = "iothomeautomate.azurewebsites.net";
+const char* host = "iothome.azurewebsites.net";
 int DeviceId=0;
 int PostDataCount=0;
 int delayBetweenSend=5000;
