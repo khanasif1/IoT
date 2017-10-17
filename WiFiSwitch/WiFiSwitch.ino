@@ -12,6 +12,7 @@ int lastswitchState=2;
 void setup() {
    // put your setup code here, to run once:
     Serial.begin(115200);
+    Serial.println("***********************Start WiFi Connection*********************** ");
      delay(10);   
      pinMode(RELAY1, OUTPUT);       
      WifiHelper.Connect();      
