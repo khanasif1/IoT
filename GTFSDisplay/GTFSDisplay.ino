@@ -1,18 +1,58 @@
+/******************************************************************************
+** TEXT SCROLL SAMPLE FOR ALTAIRIS ESP8266-FC16 LIBRARY
+**
+** This sample will scroll text on the display. Available characters are
+** defined in FC16_Font.h. In addition to the ASCII table, the following glyphs
+** are defined (inspired by CP437, but not fully compatible):
+** \x01 :-)
+** \x02 :-(
+** \x03 heart
+** \x04 diamond
+** \x05 club
+** \x06 spade
+** \x07 bullet
+** \x08 empty bullet
+** \x09 big bullet
+** \x0A big bullet inverse
+** \x0B checkbox empty
+** \x0C checkbox cross
+** \x0D checkbox check
+** \x0E checkbox full
+** \x0F sunny
+** \x10 triangle right
+** \x11 triangle left
+** \x18 arrow up
+** \x19 arrow down
+** \x1A arrow right
+** \x1B arrow left
+** \x7F full-width space (8 pixels)
+**
+** Hardware setup (ESP8266 <-> FC16):
+** 3V3 <-> VCC, GND <-> GND, D7 <-> DIN, D8 <-> CS, D5 <-> CLK
+******************************************************************************/
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>  
 #include "WifiHelper.h"
 #include "MessageBuilder.h"
 #include <ArduinoJson.h>
+#include <FC16.h>
 
 //const char* host = "iothome.azurewebsites.net";
 const char* host = "iotv2readgtfsnsw.azurewebsites.net";
 int i=0;
- DynamicJsonBuffer jsonBuffer;
+DynamicJsonBuffer jsonBuffer;
+
+const int csPin = D8;      // CS pin used to connect FC16
+const int displayCount = 4;   // Number of displays; usually 4 or 8
+const int scrollDelay = 30;   // Scrolling speed - pause in ms
+FC16 display = FC16(csPin, displayCount);
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  delay(100);
+  delay(100);  
+  
   Serial.println("***********************Connected Started*********************** ");
   WifiHelper.Connect();      
   //if you get here you have connected to the WiFi
@@ -20,11 +60,12 @@ void setup() {
     pinMode(LED_BUILTIN, OUTPUT); 
 }
 
-void loop() {
+void loop() { 
+  
   digitalWrite(LED_BUILTIN, HIGH);
   // put your main code here, to run repeatedly:
   i++;
-  //Serial.println("Hi From NodeMCU"+String(i));
+  
   delay(10000);
 
   //Serial.print("connecting to ");
@@ -68,14 +109,24 @@ void loop() {
         Serial.print("********************");
         //Serial.println(jsonMessage);
         
+        InitDisplay();
+
         DynamicJsonBuffer jsonBuffer;
         JsonObject& root = jsonBuffer.parseObject(jsonMessage);
         JsonArray& requests = root["root"];
         for (auto& request : requests) {
-           String type = request["Stop_headsign"];
-           const char* value = request["Arrival_time"];
-          Serial.println(">>"+String(value));    
+           String Stop_headsign = request["Stop_headsign"];
+           String Arrival_time = request["Arrival_time"];
+           String Departure_time = request["Departure_time"];
+           String ArriveDelay = request["ArriveDelay"];
+           String DepartDelay = request["DepartDelay"];           
+           
+          Serial.println(">>"+String(Stop_headsign)+">>"+String(Arrival_time)+">>"+String(Departure_time)+">>"+String(ArriveDelay)+">>"+String(DepartDelay));  
+          String _msg="Next Train --> "+String(Stop_headsign)+"   Arrival Time :  "+String(Arrival_time)+"   Departure Time :  "+String(Departure_time)+" Arrive Delay :  "+String(ArriveDelay)+" Depart Delay :  "+String(DepartDelay);
+          DisplayMessage( _msg);
+          //delay(1000);
         }
+        //DisposeDisplay();
         Serial.println("$");    
         
        /*String timeVal = root[String("Stop_headsign")];
@@ -90,5 +141,38 @@ void loop() {
         Serial.println(Minutes);
         Serial.println("@@@@@@@@@@@@@@@@@@@@@@");*/
         digitalWrite(LED_BUILTIN, LOW);
+
+}
+void InitDisplay()
+{
+      display.shutdown(false);  // turn on display
+      display.setIntensity(8);  // set medium brightness
+      display.clearDisplay();   // turn all LED off
+      delay(100);
+
+}
+void DisposeDisplay()
+{
+      display.clearDisplay();   // turn all LED off  
+      display.shutdown(true);  // turn on display
+}
+void DisplayMessage(String _message)
+{            
+      char Message[500];
+      _message.toCharArray(Message,500);
+      // Set text to display
+      display.setText(Message);
+
+      for(int i=0;i<1000;i++){
+       // Perform scroll
+       display.update();
+       delay(20);
+      }
+
+      // Wait for 60 ms
+      //delay(scrollDelay);
+
+      // Perform scroll
+      //display.update();
 
 }
