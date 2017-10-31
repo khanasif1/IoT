@@ -52,10 +52,12 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   delay(100);  
-  
+  InitDisplay();
+  DisplayMessage("Connection Started");
   Serial.println("***********************Connected Started*********************** ");
   WifiHelper.Connect();      
   //if you get here you have connected to the WiFi
+  DisplayMessage("Connected to WiFi");
    Serial.println("***********************Connected to WiFi*********************** ");
     pinMode(LED_BUILTIN, OUTPUT); 
 }
@@ -76,12 +78,11 @@ void loop() {
   const int httpPort = 80;
   
   if (!client.connect(host, httpPort)) {
+    DisplayMessage("connection to server failed");
     Serial.println("connection to server failed");
      WifiHelper.Connect();  
     return;
   }
-
- 
   String url = "/TrainsUpdate";
   String data="2";
   String jsonMessage="";
@@ -109,11 +110,12 @@ void loop() {
         Serial.print("********************");
         //Serial.println(jsonMessage);
         
-        InitDisplay();
+        
 
         DynamicJsonBuffer jsonBuffer;
         JsonObject& root = jsonBuffer.parseObject(jsonMessage);
         JsonArray& requests = root["root"];
+        String _msg="Next Train --> ";
         for (auto& request : requests) {
            String Stop_headsign = request["Stop_headsign"];
            String Arrival_time = request["Arrival_time"];
@@ -122,7 +124,7 @@ void loop() {
            String DepartDelay = request["DepartDelay"];           
            
           Serial.println(">>"+String(Stop_headsign)+">>"+String(Arrival_time)+">>"+String(Departure_time)+">>"+String(ArriveDelay)+">>"+String(DepartDelay));  
-          String _msg="Next Train --> "+String(Stop_headsign)+"   Arrival Time :  "+String(Arrival_time)+"   Departure Time :  "+String(Departure_time)+" Arrive Delay :  "+String(ArriveDelay)+" Depart Delay :  "+String(DepartDelay);
+          _msg=_msg + String(Stop_headsign)+"   Arrival Time :  "+String(Arrival_time)+"   Departure Time :  "+String(Departure_time)+" Arrive Delay :  "+String(ArriveDelay)+" Depart Delay :  "+String(DepartDelay);
           DisplayMessage( _msg);
           //delay(1000);
         }
@@ -168,11 +170,4 @@ void DisplayMessage(String _message)
        display.update();
        delay(20);
       }
-
-      // Wait for 60 ms
-      //delay(scrollDelay);
-
-      // Perform scroll
-      //display.update();
-
 }
