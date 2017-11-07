@@ -41,39 +41,93 @@
 //const char* host = "iothome.azurewebsites.net";
 const char* host = "iotv2readgtfsnsw.azurewebsites.net";
 int i=0;
+int firstLoop=0;
 DynamicJsonBuffer jsonBuffer;
 
 const int csPin = D8;      // CS pin used to connect FC16
 const int displayCount = 4;   // Number of displays; usually 4 or 8
 const int scrollDelay = 30;   // Scrolling speed - pause in ms
 FC16 display = FC16(csPin, displayCount);
-
+String _msg="";
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   delay(100);  
   InitDisplay();
-  DisplayMessage("Connection Started");
+  DisplayMessage("Trying Server Connection");
   Serial.println("***********************Connected Started*********************** ");
   WifiHelper.Connect();      
   //if you get here you have connected to the WiFi
   DisplayMessage("Connected to WiFi");
+  display.update();
+  delay(500);
    Serial.println("***********************Connected to WiFi*********************** ");
     pinMode(LED_BUILTIN, OUTPUT); 
 }
 
 void loop() { 
   
-  digitalWrite(LED_BUILTIN, HIGH);
-  // put your main code here, to run repeatedly:
-  i++;
-  
-  delay(10000);
+        digitalWrite(LED_BUILTIN, HIGH);
+        // put your main code here, to run repeatedly:
+        i++;
+        Serial.println("Loop"+String(i));
+        if(firstLoop==0){
+          Serial.println("Calling API");
+                 String jsonMessage=HTTPRequestHelper();
+                 DynamicJsonBuffer jsonBuffer;
+                 JsonObject& root = jsonBuffer.parseObject(jsonMessage);
+                 JsonArray& requests = root["root"];
+                 DisplayMessage( "::Schedule::");
+                 for (auto& request : requests) {
+                     String Stop_headsign = request["Stop_headsign"];
+                     String Arrival_time = request["Arrival_time"];
+                     String Departure_time = request["Departure_time"];
+                     String ArriveDelay = request["ArriveDelay"];
+                     String DepartDelay = request["DepartDelay"];           
+                     
+                    Serial.println(">>"+String(Stop_headsign)+">>"+String(Arrival_time)+">>"+String(Departure_time)+">>"+String(ArriveDelay)+">>"+String(DepartDelay));  
+                   _msg =_msg + String(Stop_headsign)+"   Arrival Time :  "+String(Arrival_time)+"   Departure Time :  "+String(Departure_time)+" Arrive Delay :  "+String(ArriveDelay)+" Depart Delay :  "+String(DepartDelay);
+                   delay(100);
+                  }
+               
+                //Serial.println("Message build"+_msg);
+                DisplayMessage(_msg); 
+                firstLoop++;              
+        }else
+        {
+          if(i==3000){
+                 Serial.println("Calling API");
+                 String jsonMessage=HTTPRequestHelper();
+                 DynamicJsonBuffer jsonBuffer;
+                 JsonObject& root = jsonBuffer.parseObject(jsonMessage);
+                 JsonArray& requests = root["root"];
+                 DisplayMessage( "::Schedule::");
+                 for (auto& request : requests) {
+                     String Stop_headsign = request["Stop_headsign"];
+                     String Arrival_time = request["Arrival_time"];
+                     String Departure_time = request["Departure_time"];
+                     String ArriveDelay = request["ArriveDelay"];
+                     String DepartDelay = request["DepartDelay"];           
+                     
+                    Serial.println(">>"+String(Stop_headsign)+">>"+String(Arrival_time)+">>"+String(Departure_time)+">>"+String(ArriveDelay)+">>"+String(DepartDelay));  
+                   _msg =_msg + String(Stop_headsign)+"   Arrival Time :  "+String(Arrival_time)+"   Departure Time :  "+String(Departure_time)+" Arrive Delay :  "+String(ArriveDelay)+" Depart Delay :  "+String(DepartDelay);
+                   delay(5);
+                  }
+               
+                //Serial.println("Message build"+_msg);
+                DisplayMessage(_msg);
+                i=0;
+              }
+                 
+        }
+        display.update();
+        delay(scrollDelay);
+        digitalWrite(LED_BUILTIN, LOW);
+}
 
-  //Serial.print("connecting to ");
-  //Serial.println(host);
-  
-  // Use WiFiClient class to create TCP connections
+String HTTPRequestHelper(){
+  Serial.println("in HTTP Helper");
+    // Use WiFiClient class to create TCP connections
   WiFiClient client;
   const int httpPort = 80;
   
@@ -81,7 +135,7 @@ void loop() {
     DisplayMessage("connection to server failed");
     Serial.println("connection to server failed");
      WifiHelper.Connect();  
-    return;
+    return "";
   }
   String url = "/TrainsUpdate";
   String data="2";
@@ -106,45 +160,10 @@ void loop() {
       // Read all the lines of the reply from server and print them to Serial
       while(client.available()){
         jsonMessage = client.readStringUntil('\r');             
-      }
-        Serial.print("********************");
-        //Serial.println(jsonMessage);
-        
-        
-
-        DynamicJsonBuffer jsonBuffer;
-        JsonObject& root = jsonBuffer.parseObject(jsonMessage);
-        JsonArray& requests = root["root"];
-        String _msg="Next Train --> ";
-        for (auto& request : requests) {
-           String Stop_headsign = request["Stop_headsign"];
-           String Arrival_time = request["Arrival_time"];
-           String Departure_time = request["Departure_time"];
-           String ArriveDelay = request["ArriveDelay"];
-           String DepartDelay = request["DepartDelay"];           
-           
-          Serial.println(">>"+String(Stop_headsign)+">>"+String(Arrival_time)+">>"+String(Departure_time)+">>"+String(ArriveDelay)+">>"+String(DepartDelay));  
-          _msg=_msg + String(Stop_headsign)+"   Arrival Time :  "+String(Arrival_time)+"   Departure Time :  "+String(Departure_time)+" Arrive Delay :  "+String(ArriveDelay)+" Depart Delay :  "+String(DepartDelay);
-          DisplayMessage( _msg);
-          //delay(1000);
-        }
-        //DisposeDisplay();
-        Serial.println("$");    
-        
-       /*String timeVal = root[String("Stop_headsign")];
-        String DateTime = root[String("Arrival_time")];
-        String Hours = root[String("Departure_time")];
-        String Minutes = root[String("ArriveDelay")];
-        String Seconds = root[String("DepartDelay")];
-        Serial.println("@@@@@@@@@@@@@@@@@@@@@@");
-        Serial.println("DateTime:"+timeVal);
-        Serial.print(DateTime);
-        Serial.print(Hours);
-        Serial.println(Minutes);
-        Serial.println("@@@@@@@@@@@@@@@@@@@@@@");*/
-        digitalWrite(LED_BUILTIN, LOW);
-
+      }   
+      return jsonMessage;
 }
+
 void InitDisplay()
 {
       display.shutdown(false);  // turn on display
@@ -164,10 +183,4 @@ void DisplayMessage(String _message)
       _message.toCharArray(Message,500);
       // Set text to display
       display.setText(Message);
-
-      for(int i=0;i<1000;i++){
-       // Perform scroll
-       display.update();
-       delay(20);
-      }
 }
