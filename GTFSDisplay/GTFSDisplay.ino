@@ -40,6 +40,8 @@
 
 //const char* host = "iothome.azurewebsites.net";
 const char* host = "iotv2readgtfsnsw.azurewebsites.net";
+
+
 int i=0;
 int firstLoop=0;
 DynamicJsonBuffer jsonBuffer;
@@ -150,9 +152,8 @@ String HTTPRequestHelper(){
       //Serial.println("####"+data);
       unsigned long timeout = millis();
       while (client.available() == 0) {
-        if (millis() - timeout > 5000) {
-          //Serial.println(">>> Client Timeout !");
-          
+        if (millis() - timeout > 10000) {
+          Serial.println(">>> Client Timeout !");          
           client.stop();        
         }
       }
@@ -161,6 +162,7 @@ String HTTPRequestHelper(){
       while(client.available()){
         jsonMessage = client.readStringUntil('\r');             
       }   
+      Serial.println("Response : "+jsonMessage);
       return jsonMessage;
 }
 
