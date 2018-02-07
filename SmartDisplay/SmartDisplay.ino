@@ -18,6 +18,9 @@
 #include <TimeLib.h>
 #include <ArduinoJson.h>
 #include "WifiHelper.h"
+#include "HttpHelper.h"
+#include "CryptoMessageHelper.h"
+#include "GTFSMessageHelper.h"
 
 int pinCS = 15; 
 int numberOfHorizontalDisplays = 4; 
@@ -27,16 +30,20 @@ int updCnt = 0;
 int dots = 0;
 long dotTime = 0;
 long clkTime = 0;
-long cryptoPrice = 0;
+long displayTypeTimer = 0;
+long displayType=0;
 Max72xxPanel matrix = Max72xxPanel(pinCS, numberOfHorizontalDisplays, numberOfVerticalDisplays);
-DynamicJsonBuffer jsonBuffer;
+
 int refresh=0;
 int wait = 50; 
 int spacer = 2;
 int width = 5 + spacer; 
 
-const char* host = "iotv2readcryptocurrency.azurewebsites.net";
+char* host = "iotv2readcryptocurrency.azurewebsites.net";
+char* gtfshost = "iotv2readgtfsnsw.azurewebsites.net";
+
 void setup() {
+  Serial.println("***********************Setup Begins*********************** ");
   Serial.begin(9600);
   delay(100);  
   setSyncProvider(RTC.get);//CLOCK
@@ -89,23 +96,30 @@ void loop() {
         dots = !dots;
       }*/
     time_t t = now(); 
-    Serial.println(String(hour(t))+" : "+String(minute(t))+" : "+String(second(t)));
-    if(millis()- cryptoPrice>10000){
-       cryptoPrice=millis();
-        String jsonMessage=HTTPRequestHelper();        
-        DynamicJsonBuffer jsonBuffer;
-        JsonObject& root = jsonBuffer.parseObject(jsonMessage);
-        JsonArray& requests = root["root"];
-        String _cryptoDisplayMessage;
-        for (auto& request : requests) {
-           String _cryptomessageHeader=request["Coin"];
-           _cryptoDisplayMessage=_cryptoDisplayMessage+_cryptomessageHeader;
-           String _cryptomessageValue = request["Bid"];
-           _cryptoDisplayMessage=_cryptoDisplayMessage+":"+_cryptomessageValue+" ";
-        }
-        Serial.println(_cryptoDisplayMessage);
-        ScrollText(_cryptoDisplayMessage);
+    Serial.println(String(hour(t))+" : "+String(minute(t))+" : "+String(second(t)));       
+      if(millis()- displayTypeTimer>60000){
+        DynamicJsonBuffer jsonBuffer(2000);
+        String urlDisplayType ="/GetDevice?email=khanasif1%40gmail.com";
+        String jsonMessageDisplay =HttpHelper.GetHttp(host,urlDisplayType);
+        jsonBuffer.clear();       
+        JsonObject& rootDisplay = jsonBuffer.parseObject(jsonMessageDisplay);                           
+        displayType = rootDisplay["DisplayType"];                           
+        Serial.println("Display Type "+String(displayType));
+        jsonBuffer.clear();        
+        displayTypeTimer=millis();
       }
+      
+       if(displayType== 2 ){                
+                String jsonMessage=HttpHelper.GetHttp(host,"/GetIOTTicker?id=1");                             
+                ScrollText(CryptoMessageHelper.GetMessage(jsonMessage));
+        }else if (displayType== 3){
+                String jsonMessage=HttpHelper.GetHttp(gtfshost,"/TrainsUpdate");
+                String processedMessage=GTFSMessageHelper.GetMessage(jsonMessage);
+                Serial.println("Processed Message : "+processedMessage);
+                ScrollText(processedMessage);
+        }else{
+                  ScrollText("\x02 Display Type not selected \x02");
+        }      
 }
 
 void DisplayTime(int h,int m,int s){
@@ -235,44 +249,3 @@ void ResetTime(){
           }
       }
 }
-String HTTPRequestHelper(){
-  Serial.println("in HTTP Helper");
-    // Use WiFiClient class to create TCP connections
-  WiFiClient client;
-  const int httpPort = 80;
-  
-  if (!client.connect(host, httpPort)) {
-    //DisplayMessage("connection to server failed");
-    Serial.println("connection to server failed");
-     WifiHelper.Connect();  
-    //return "";
-  }
-  Serial.println("Is Connected");
-  String url = "/GetBTC";
-  String data="2";
-  String jsonMessage="";
-   client.print(String("GET ") + url + " HTTP/1.1\r\n" +
-                 "Host: " + host + "\r\n" +
-                 //"Connection: close\r\n" +
-                 "Content-Type: application/json\r\n" +
-                 "Content-Length: " + data.length() + "\r\n" +
-                 "\r\n" + // This is the extra CR+LF pair to signify the start of a body
-                 data +"\n");
-     Serial.println("Get Request executed");
-      unsigned long timeout = millis();
-      while (client.available() == 0) {
-        if (millis() - timeout > 10000) {
-          Serial.println(">>> Client Timeout !");          
-          client.stop();        
-        }
-      }
-      Serial.println("Reading HTTP Result");   
-      // Read all the lines of the reply from server and print them to Serial
-      while(client.available()){
-        jsonMessage = client.readStringUntil('\r');             
-      }   
-      Serial.println("Response : "+jsonMessage);
-      return jsonMessage;
-}
-
-
