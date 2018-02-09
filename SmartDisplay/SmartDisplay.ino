@@ -21,6 +21,7 @@
 #include "HttpHelper.h"
 #include "CryptoMessageHelper.h"
 #include "GTFSMessageHelper.h"
+#include "ClockHelper.h"
 
 int pinCS = 15; 
 int numberOfHorizontalDisplays = 4; 
@@ -31,11 +32,14 @@ int dots = 0;
 long dotTime = 0;
 long clkTime = 0;
 long displayTypeTimer = 0;
+long cryptoTimer = 0;
+long gtfsTimer = 0;
 long displayType=0;
+String displayText="";
 Max72xxPanel matrix = Max72xxPanel(pinCS, numberOfHorizontalDisplays, numberOfVerticalDisplays);
 
 int refresh=0;
-int wait = 50; 
+int wait = 20; 
 int spacer = 2;
 int width = 5 + spacer; 
 
@@ -53,51 +57,20 @@ void setup() {
   matrix.setRotation(1, 1);        // 2 
   matrix.setRotation(2, 1);        // 3 
   matrix.setRotation(3, 1);        // 4 
-
+  ScrollText("Setup \x0B ");
   Serial.println("***********************Connected Started*********************** ");
   WifiHelper.Connect();      
-  delay(500);
+  ScrollText("WiFi \x0B ");
+  delay(500); 
   Serial.println("***********************Connected to WiFi*********************** ");
   pinMode(LED_BUILTIN, OUTPUT); 
 }
 
 void loop() {
-      Serial.println("In Loop");
-      /*//If reset values exist on searila
-      ResetTime();
-      float celsius;float fahrenheit;
-      static time_t tLast;
-      time_t t = now(); 
-      // put your main code here, to run repeatedly:
-      if(updCnt<=0) { 
-        updCnt = 10;
-        Serial.println("Getting data ...");        
-        int temp = RTC.temperature();
-        celsius = temp / 4.0;
-        fahrenheit = celsius * 9.0 / 5.0 + 32.0;
-        Serial.println("Data loaded");
-        clkTime = millis();
-        Serial.println(String(hour(t)));
-        Serial.println(String(minute(t)));
-        Serial.println(String(second(t)));
-        Serial.println("Temp : C = "+String(celsius)+" F = "+String(fahrenheit));
-      }
-      
-      DisplayTime(hour(t),minute(t),second(t));
-      
-      if(millis()-clkTime > 15000  && dots) {
-        ScrollText("Temp C:"+String(celsius)+" F:"+String(fahrenheit));
-        updCnt--;
-        clkTime = millis();
-        }
-           
-     if(millis()-dotTime > 500) {
-        dotTime = millis();
-        dots = !dots;
-      }*/
-    time_t t = now(); 
-    Serial.println(String(hour(t))+" : "+String(minute(t))+" : "+String(second(t)));       
-      if(millis()- displayTypeTimer>60000){
+      Serial.println("In Loop");           
+      //Serial.println("Display type timer interval : "+String(millis()- displayTypeTimer));
+      if(displayTypeTimer == 0){
+        Serial.println("First run pulling display type");
         DynamicJsonBuffer jsonBuffer(2000);
         String urlDisplayType ="/GetDevice?email=khanasif1%40gmail.com";
         String jsonMessageDisplay =HttpHelper.GetHttp(host,urlDisplayType);
@@ -108,15 +81,87 @@ void loop() {
         jsonBuffer.clear();        
         displayTypeTimer=millis();
       }
-      
-       if(displayType== 2 ){                
-                String jsonMessage=HttpHelper.GetHttp(host,"/GetIOTTicker?id=1");                             
-                ScrollText(CryptoMessageHelper.GetMessage(jsonMessage));
+      else if(millis()- displayTypeTimer>60000){
+        Serial.println("Getting display type");
+        DynamicJsonBuffer jsonBuffer(2000);
+        String urlDisplayType ="/GetDevice?email=khanasif1%40gmail.com";
+        String jsonMessageDisplay =HttpHelper.GetHttp(host,urlDisplayType);
+        jsonBuffer.clear();       
+        JsonObject& rootDisplay = jsonBuffer.parseObject(jsonMessageDisplay);                           
+        displayType = rootDisplay["DisplayType"];                           
+        Serial.println("Display Type "+String(displayType));
+        jsonBuffer.clear();        
+        displayTypeTimer=millis();
+      }
+     
+       if(displayType== 1 ){
+               Serial.println("In Clock");
+             //If reset values exist on searila
+                //ResetTime();
+                float celsius;float fahrenheit;
+                static time_t tLast;
+                time_t t = now(); 
+                // put your main code here, to run repeatedly:
+                if(updCnt<=0) { 
+                  updCnt = 10;
+                  Serial.println("Getting data ...");        
+                  int temp = RTC.temperature();
+                  celsius = temp / 4.0;
+                  fahrenheit = celsius * 9.0 / 5.0 + 32.0;
+                  Serial.println("Data loaded");
+                  clkTime = millis();
+                  Serial.println(String(hour(t)));
+                  Serial.println(String(minute(t)));
+                  Serial.println(String(second(t)));
+                  Serial.println("Temp : C = "+String(celsius)+" F = "+String(fahrenheit));
+                }
+                DisplayTime(hour(t),minute(t),second(t));               
+                //ClockHelper.DisplayTime(hour(t),minute(t),second(t),pinCS, numberOfHorizontalDisplays, numberOfVerticalDisplays);
+                                
+                if(millis()-clkTime > 15000  && dots) {
+                   int temp = RTC.temperature();
+                  celsius = temp / 4.0;
+                  fahrenheit = celsius * 9.0 / 5.0 + 32.0;
+                  Serial.println("Data loaded");
+                  clkTime = millis();
+                  ScrollText("Temp C:"+String(celsius)+" F:"+String(fahrenheit));
+                  updCnt--;
+                  clkTime = millis();
+                  }                     
+               if(millis()-dotTime > 500) {
+                  dotTime = millis();
+                  dots = !dots;
+                }               
+              Serial.println(String(hour(t))+" : "+String(minute(t))+" : "+String(second(t))); 
+       }
+       else if(displayType== 2 ){
+              Serial.println("Crypto timer interval : "+String(millis()- cryptoTimer));
+              if(cryptoTimer == 0){
+                Serial.println("First run pulling crypto");
+                String jsonMessage=HttpHelper.GetHttp(host,"/GetIOTTicker?id=1"); 
+                  displayText=CryptoMessageHelper.GetMessage(jsonMessage);
+                  cryptoTimer=millis();
+               }
+              else if(millis()- cryptoTimer>120000){
+                  String jsonMessage=HttpHelper.GetHttp(host,"/GetIOTTicker?id=1"); 
+                  displayText=CryptoMessageHelper.GetMessage(jsonMessage);
+                  cryptoTimer=millis();
+                }                                 
+                ScrollText(displayText);
         }else if (displayType== 3){
+              Serial.println("GTFS timer interval : "+String(millis()- gtfsTimer));
+              if(gtfsTimer == 0){
+                Serial.println("First run pulling gtfs");
                 String jsonMessage=HttpHelper.GetHttp(gtfshost,"/TrainsUpdate");
-                String processedMessage=GTFSMessageHelper.GetMessage(jsonMessage);
-                Serial.println("Processed Message : "+processedMessage);
-                ScrollText(processedMessage);
+                displayText=GTFSMessageHelper.GetMessage(jsonMessage);
+                gtfsTimer=millis();
+              }
+              else if(millis()- gtfsTimer>120000){
+                String jsonMessage=HttpHelper.GetHttp(gtfshost,"/TrainsUpdate");
+                displayText=GTFSMessageHelper.GetMessage(jsonMessage);
+                gtfsTimer=millis();
+              }               
+                ScrollText(displayText);
         }else{
                   ScrollText("\x02 Display Type not selected \x02");
         }      

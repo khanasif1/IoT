@@ -4,7 +4,8 @@
 class ClockHelperClass
 {
   public:
-    ClockHelperClass();    
+    ClockHelperClass(); 
+    void DisplayTime(int h,int m,int s,int pinCS, int numberOfHorizontalDisplays, int numberOfVerticalDisplays);   
 };
 
 extern ClockHelperClass ClockHelper;
