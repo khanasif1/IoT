@@ -70,6 +70,7 @@ void loop() {
       Serial.println("In Loop");           
       //Serial.println("Display type timer interval : "+String(millis()- displayTypeTimer));
       if(displayTypeTimer == 0){
+        
         Serial.println("First run pulling display type");
         DynamicJsonBuffer jsonBuffer(2000);
         String urlDisplayType ="/GetDevice?email=khanasif1%40gmail.com";
@@ -78,7 +79,7 @@ void loop() {
         JsonObject& rootDisplay = jsonBuffer.parseObject(jsonMessageDisplay);                           
         displayType = rootDisplay["DisplayType"];                           
         Serial.println("Display Type "+String(displayType));
-        jsonBuffer.clear();        
+        jsonBuffer.clear();
         displayTypeTimer=millis();
       }
       else if(millis()- displayTypeTimer>60000){
@@ -95,12 +96,33 @@ void loop() {
       }
      
        if(displayType== 1 ){
-               Serial.println("In Clock");
-             //If reset values exist on searila
-                //ResetTime();
+                Serial.println("In Clock");
+
                 float celsius;float fahrenheit;
                 static time_t tLast;
-                time_t t = now(); 
+                time_t t = now();
+               //If reset values exist on searila
+                if(hour(t)==0 && minute(t)==0){
+                   
+                    Serial.println("Getting time");
+                    DynamicJsonBuffer jsonBufferTime(2000);
+                    String urlTime ="/GetTime";
+                    String jsonMessageTime =HttpHelper.GetHttp(host,urlTime);                         
+                    JsonObject& rootTime = jsonBufferTime.parseObject(jsonMessageTime);                           
+                    String years = rootTime["Year"]; 
+                    String months = rootTime["Month"]; 
+                    String days = rootTime["Day"]; 
+                    String hours = rootTime["hour"]; 
+                    String minutes = rootTime["minutes"];                           
+                    String seconds = rootTime["seconds"];                           
+                    Serial.println("Time "+hours+":"+minutes);               
+                    jsonBufferTime.clear();     
+                    ResetTime(years,months,days,hours,minutes,seconds);
+
+                }else{
+                    Serial.println("Time Available "+String(hour(t))+":"+String(minute(t)));                                    
+                }             
+ 
                 // put your main code here, to run repeatedly:
                 if(updCnt<=0) { 
                   updCnt = 10;
@@ -262,15 +284,16 @@ void ScrollText (String text){
     delay(wait);
   }
 }
-void ResetTime(){
+void ResetTime(String years, String months, String days, String hours, String minutes, String seconds){
      tmElements_t tm;
      time_t t;
-     if (Serial.available() >= 12) {
+      //check for input to set the RTC, minimum length is 12, i.e. yy,m,d,h,m,s
+     //if (Serial.available() >= 12) {
           Serial.println("Datetime Reset values available");
           //note that the tmElements_t Year member is an offset from 1970,
           //but the RTC wants the last two digits of the calendar year.
           //use the convenience macros from Time.h to do the conversions.
-          int y = Serial.parseInt();
+          int y = years.toInt();
           if (y >= 100 && y < 1000)
               Serial.println("Error: Year must be two digits or four digits!");
           else {
@@ -278,11 +301,11 @@ void ResetTime(){
                   tm.Year = CalendarYrToTm(y);
               else    //(y < 100)
                   tm.Year = y2kYearToTm(y);
-              tm.Month = Serial.parseInt();
-              tm.Day = Serial.parseInt();
-              tm.Hour = Serial.parseInt();
-              tm.Minute = Serial.parseInt();
-              tm.Second = Serial.parseInt();
+              tm.Month = months.toInt();
+              tm.Day = days.toInt();
+              tm.Hour = hours.toInt();
+              tm.Minute = minutes.toInt();
+              tm.Second = seconds.toInt();
               t = makeTime(tm);
               RTC.set(t);        //use the time_t value to ensure correct weekday is set
               setTime(t);        
@@ -292,5 +315,5 @@ void ResetTime(){
               //dump any extraneous input
               while (Serial.available() > 0) Serial.read();
           }
-      }
+      //}
 }

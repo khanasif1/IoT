@@ -18,8 +18,7 @@ String HttpHelperClass::GetHttp(char* host,String url){
          WifiHelper.Connect();  
         //return "";
       }
-      Serial.println("Is Connected");
-      //String url = "/GetIOTTicker?id=1";
+      Serial.println("Is Connected");      
       String data="2";
       String jsonMessage="";
        client.print(String("GET ") + url + " HTTP/1.1\r\n" +
