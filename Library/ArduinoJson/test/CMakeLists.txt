@@ -1,17 +1,9 @@
-# Copyright Benoit Blanchon 2014-2017
+# ArduinoJson - arduinojson.org
+# Copyright Benoit Blanchon 2014-2018
 # MIT License
-#
-# Arduino JSON library
-# https://github.com/bblanchon/ArduinoJson
-# If you like this project, please add a star!
-
-include(gtest.cmake)
-
-file(GLOB TESTS_FILES *.hpp *.cpp)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
 	add_compile_options(
-		-fno-exceptions
 		-pedantic
 		-Wall
 		-Wcast-align
@@ -24,16 +16,23 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
 		-Wformat=2
 		-Winit-self
 		-Wmissing-include-dirs
-		-Wparentheses
 		-Wnon-virtual-dtor
 		-Wold-style-cast
 		-Woverloaded-virtual
+		-Wparentheses
 		-Wredundant-decls
 		-Wshadow
 		-Wsign-promo
+		-Wstrict-aliasing
 		-Wstrict-overflow=5
 		-Wundef
 	)
+
+	if(NOT MINGW)
+		add_compile_options(
+			-std=c++98
+		)
+	endif()
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
@@ -65,8 +64,13 @@ if(MSVC)
 	)
 endif()
 
-add_executable(ArduinoJsonTests ${TESTS_FILES})
-target_include_directories(ArduinoJsonTests PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../include)
-target_link_libraries(ArduinoJsonTests gtest)
-
-add_test(ArduinoJsonTests ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ArduinoJsonTests)
+add_subdirectory(DynamicJsonBuffer)
+add_subdirectory(IntegrationTests)
+add_subdirectory(JsonArray)
+add_subdirectory(JsonBuffer)
+add_subdirectory(JsonObject)
+add_subdirectory(JsonVariant)
+add_subdirectory(JsonWriter)
+add_subdirectory(Misc)
+add_subdirectory(Polyfills)
+add_subdirectory(StaticJsonBuffer)

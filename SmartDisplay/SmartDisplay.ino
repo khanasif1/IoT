@@ -11,8 +11,9 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>  
-#include <DS3232RTC.h> 
-//#include <Streaming.h> 
+//#include <DS3232RTC.h> 
+#include <DS1307RTC.h>
+#include <Streaming.h> 
 //#include <Time.h>             //http://playground.arduino.cc/Code/Time
 //#include <Wire.h>             //http://arduino.cc/en/Reference/Wire
 #include <TimeLib.h>
@@ -82,7 +83,7 @@ void loop() {
         jsonBuffer.clear();
         displayTypeTimer=millis();
       }
-      else if(millis()- displayTypeTimer>60000){
+      else if(millis()- displayTypeTimer>30000){
         Serial.println("Getting display type");
         DynamicJsonBuffer jsonBuffer(2000);
         String urlDisplayType ="/GetDevice?email=khanasif1%40gmail.com";
@@ -121,13 +122,12 @@ void loop() {
 
                 }else{
                     Serial.println("Time Available "+String(hour(t))+":"+String(minute(t)));                                    
-                }             
- 
-                // put your main code here, to run repeatedly:
+                } 
+                
                 if(updCnt<=0) { 
                   updCnt = 10;
                   Serial.println("Getting data ...");        
-                  int temp = RTC.temperature();
+                  int temp = 0;////RTC.temperature();
                   celsius = temp / 4.0;
                   fahrenheit = celsius * 9.0 / 5.0 + 32.0;
                   Serial.println("Data loaded");
@@ -141,12 +141,12 @@ void loop() {
                 //ClockHelper.DisplayTime(hour(t),minute(t),second(t),pinCS, numberOfHorizontalDisplays, numberOfVerticalDisplays);
                                 
                 if(millis()-clkTime > 15000  && dots) {
-                   int temp = RTC.temperature();
+                  /*int temp = 0;////RTC.temperature();
                   celsius = temp / 4.0;
                   fahrenheit = celsius * 9.0 / 5.0 + 32.0;
                   Serial.println("Data loaded");
                   clkTime = millis();
-                  ScrollText("Temp C:"+String(celsius)+" F:"+String(fahrenheit));
+                  ScrollText("Temp C:"+String(celsius)+" F:"+String(fahrenheit));*/
                   updCnt--;
                   clkTime = millis();
                   }                     
