@@ -25,7 +25,8 @@ void loop() {
         Serial.println("First run pulling salat time ");
         DynamicJsonBuffer jsonBuffer(2000);
         
-        String urlDisplayType ="/GetIsPrayerTime?datetime=null";//2018-02-19%2016%3A49
+        //String urlDisplayType ="/GetIsPrayerTime?datetime=null";//2018-02-19%2016%3A49
+        String urlDisplayType ="/GetIsPrayerTest";
         String jsonMessage =HttpHelper.GetHttp(host,urlDisplayType);
         
         jsonBuffer.clear();       
@@ -39,7 +40,7 @@ void loop() {
             Serial.println("Enable switch");
             digitalWrite(13, HIGH);
             Serial.println("Delay 3min 30 sec");// sets the digital pin 13 on
-            delay(210000);                 // waits Adhan Audio to complete
+            delay(219000);                 // waits Adhan Audio to complete
             Serial.println("Disable switch");
             digitalWrite(13, LOW); 
        }else{
@@ -51,7 +52,8 @@ void loop() {
         Serial.println("Getting Salat time ");
         DynamicJsonBuffer jsonBuffer(2000);
         
-        String urlDisplayType ="/GetIsPrayerTime?datetime=null";
+        //String urlDisplayType ="/GetIsPrayerTime?datetime=null";
+        String urlDisplayType ="/GetIsPrayerTest";
         String jsonMessage =HttpHelper.GetHttp(host,urlDisplayType);
         
         jsonBuffer.clear();       
@@ -65,7 +67,7 @@ void loop() {
             Serial.println("Enable switch");
             digitalWrite(13, HIGH);       // sets the digital pin 13 on
             Serial.println("Delay 3min 30 sec");// sets the digital pin 13 on
-            delay(210000);                 // waits Adhan Audio to complete
+            delay(219000);                 // waits Adhan Audio to complete
             Serial.println("Disable switch");
             digitalWrite(13, LOW); 
        }else{

@@ -11,6 +11,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>  
+#include <WiFiClientSecure.h>
 //#include <DS3232RTC.h> 
 #include <DS1307RTC.h>
 #include <Streaming.h> 
@@ -23,6 +24,7 @@
 #include "CryptoMessageHelper.h"
 #include "GTFSMessageHelper.h"
 #include "ClockHelper.h"
+#include "HealthCheckHelper.h"
 
 int pinCS = 15; 
 int numberOfHorizontalDisplays = 4; 
@@ -68,7 +70,8 @@ void setup() {
 }
 
 void loop() {
-      Serial.println("In Loop");           
+      Serial.println("In Loop"); 
+                
       //Serial.println("Display type timer interval : "+String(millis()- displayTypeTimer));
       if(displayTypeTimer == 0){
         
@@ -82,6 +85,8 @@ void loop() {
         Serial.println("Display Type "+String(displayType));
         jsonBuffer.clear();
         displayTypeTimer=millis();
+        //Post Healthcheck ping
+        //HealthCheckHelper.PingHealth("khanasif1%40gmail.com");
       }
       else if(millis()- displayTypeTimer>30000){
         Serial.println("Getting display type");
@@ -94,8 +99,9 @@ void loop() {
         Serial.println("Display Type "+String(displayType));
         jsonBuffer.clear();        
         displayTypeTimer=millis();
-      }
-     
+        //Post Healthcheck ping
+        //HealthCheckHelper.PingHealth("khanasif1%40gmail.com");
+      }     
        if(displayType== 1 ){
                 Serial.println("In Clock");
 
@@ -137,8 +143,7 @@ void loop() {
                   Serial.println(String(second(t)));
                   Serial.println("Temp : C = "+String(celsius)+" F = "+String(fahrenheit));
                 }
-                DisplayTime(hour(t),minute(t),second(t));               
-                //ClockHelper.DisplayTime(hour(t),minute(t),second(t),pinCS, numberOfHorizontalDisplays, numberOfVerticalDisplays);
+                DisplayTime(hour(t),minute(t),second(t));                              
                                 
                 if(millis()-clkTime > 15000  && dots) {
                   /*int temp = 0;////RTC.temperature();
@@ -186,11 +191,12 @@ void loop() {
                 ScrollText(displayText);
         }else{
                   ScrollText("\x02 Display Type not selected \x02");
-        }      
+        }  
 }
 
 void DisplayTime(int h,int m,int s){
-  
+
+
     matrix.fillScreen(LOW);
     int y = (matrix.height() - 8) / 2;
     
