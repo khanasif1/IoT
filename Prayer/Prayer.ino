@@ -25,8 +25,8 @@ void loop() {
         Serial.println("First run pulling salat time ");
         DynamicJsonBuffer jsonBuffer(2000);
         
-        //String urlDisplayType ="/GetIsPrayerTime?datetime=null";//2018-02-19%2016%3A49
-        String urlDisplayType ="/GetIsPrayerTest";
+        String urlDisplayType ="/GetIsPrayerTime?datetime=null";//2018-02-19%2016%3A49
+        //String urlDisplayType ="/GetIsPrayerTest";
         String jsonMessage =HttpHelper.GetHttp(host,urlDisplayType);
         
         jsonBuffer.clear();       
@@ -52,8 +52,8 @@ void loop() {
         Serial.println("Getting Salat time ");
         DynamicJsonBuffer jsonBuffer(2000);
         
-        //String urlDisplayType ="/GetIsPrayerTime?datetime=null";
-        String urlDisplayType ="/GetIsPrayerTest";
+        String urlDisplayType ="/GetIsPrayerTime?datetime=null";
+        //String urlDisplayType ="/GetIsPrayerTest";
         String jsonMessage =HttpHelper.GetHttp(host,urlDisplayType);
         
         jsonBuffer.clear();       
