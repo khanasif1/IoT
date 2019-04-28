@@ -98,18 +98,18 @@ void loop() {
                   Serial.println("Show Hr Min");        
                   DisplayTime(hour(t),minute(t),second(t)); 
                                 
-                  delay(1000);          
+                  delay(10000);          
                 }else{
                   Serial.println("Show Min Sec");                          
                   DisplayTime(0,second(t),hour(t));           
                 } 
+                
                 if(hour(t)>6 && hour(t)<18){
+                    Serial.println("Time: "+String(hour(t))+", Brightness:15"); 
                     matrix.setIntensity(15);
-                  }
-               else if(hour(t)>18 && hour(t)<22){
-                    matrix.setIntensity(8);
-                }
-               else if(hour(t)>22 && hour(t)<6){
+                  }              
+               else if(hour(t)>18 && hour(t)<6){
+                    Serial.println("Time: "+String(hour(t))+", Brightness:0"); 
                     matrix.setIntensity(0);
                 }
               Serial.println(String(hour(t))+" : "+String(minute(t))+" : "+String(second(t))); 
