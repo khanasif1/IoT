@@ -1,3 +1,10 @@
+#include <Dhcp.h>
+#include <Dns.h>
+#include <Ethernet.h>
+#include <EthernetClient.h>
+#include <EthernetServer.h>
+#include <EthernetUdp.h>
+
 
 /*
 ** Hardware setup (ESP8266 <-> FC16):
@@ -15,8 +22,6 @@
 //#include <DS3232RTC.h> 
 #include <DS1307RTC.h>
 #include <Streaming.h> 
-//#include <Time.h>             //http://playground.arduino.cc/Code/Time
-//#include <Wire.h>             //http://arduino.cc/en/Reference/Wire
 #include <TimeLib.h>
 #include <ArduinoJson.h>
 #include "WifiHelper.h"
@@ -26,16 +31,10 @@
 int pinCS = 15; 
 int numberOfHorizontalDisplays = 4; 
 int numberOfVerticalDisplays = 1; 
-String decodedMsg;
-int updCnt = 0;
-int dots = 0;
-long dotTime = 0;
-long clkTime = 0;
 long displayTypeTimer = 0;
-long cryptoTimer = 0;
-long gtfsTimer = 0;
-long displayType=0;
 String displayText="";
+int displayOption=0;//0= HH:MM
+int displayswitchsec=0;
 Max72xxPanel matrix = Max72xxPanel(pinCS, numberOfHorizontalDisplays, numberOfVerticalDisplays);
 
 int refresh=0;
@@ -67,8 +66,7 @@ void setup() {
 }
 
 void loop() {
-      Serial.println("In Loop"); 
-      Serial.println("In Clock");
+      Serial.println("In Loop");    
                
                 static time_t tLast;
                 time_t t = now();
@@ -89,33 +87,59 @@ void loop() {
                     Serial.println("Time "+hours+":"+minutes);               
                     jsonBufferTime.clear();     
                     ResetTime(years,months,days,hours,minutes,"0");
+                    
 
                 }else{
                     Serial.println("Time Available "+String(hour(t))+":"+String(minute(t)));                                    
                 }  
                 Serial.println("Time Available "+String(hour(t))+":"+String(minute(t))+":"+String(second(t))); 
-                if(second(t)%10==0){                  
-                  Serial.println("Show Hr Min");        
-                  DisplayTime(hour(t),minute(t),second(t)); 
-                                
-                  delay(10000);          
+                
+                if(displayswitchsec==0){
+                  displayswitchsec=calculateDisplayTime(second(t));                  
+                  Serial.println("Switch Sec: " +String(displayswitchsec));
+                }
+
+                Serial.println("DISPLAY OPTION : "+String(displayOption));
+                Serial.println("SWITCH SEC: " +String(displayswitchsec));
+                if(displayOption == 0){                  
+                  Serial.println("Show Hr Min");
+                  DisplayTime(hour(t),minute(t),second(t));
+                  Serial.println("Switch Sec: " +String(displayswitchsec));
+                  if(second(t)== displayswitchsec){
+                    Serial.println("In sec switch");
+                    displayswitchsec=0;
+                    displayOption=1;
+                    displayswitchsec=calculateDisplayTime(second(t));                   
+                  }
                 }else{
                   Serial.println("Show Min Sec");                          
-                  DisplayTime(0,second(t),hour(t));           
+                  DisplayTime(0,second(t),0);                             
+                  if(second(t)== displayswitchsec){
+                    Serial.println("In hr switch");
+                    displayswitchsec=0;
+                    displayOption=0;
+                    displayswitchsec=calculateDisplayTime(second(t));                    
+                  }
                 } 
                 
-                if(hour(t)>6 && hour(t)<18){
+                if(hour(t)>6 && hour(t)<=18){
                     Serial.println("Time: "+String(hour(t))+", Brightness:15"); 
                     matrix.setIntensity(15);
                   }              
-               else if(hour(t)>18 && hour(t)<6){
+               else if((hour(t)>18 && hour(t)<=23) ||(hour(t)>=0 && hour(t)<=6)){
                     Serial.println("Time: "+String(hour(t))+", Brightness:0"); 
                     matrix.setIntensity(0);
                 }
               Serial.println(String(hour(t))+" : "+String(minute(t))+" : "+String(second(t))); 
        
 }
-
+int calculateDisplayTime(int _second){
+    int switchsec=_second+10;
+    if(switchsec>59){
+       switchsec=switchsec-59;
+    }
+    return switchsec;
+}
 void DisplayTime(int h,int m,int s){
 
 
