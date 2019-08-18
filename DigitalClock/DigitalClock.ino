@@ -101,9 +101,13 @@ void loop() {
 
                 Serial.println("DISPLAY OPTION : "+String(displayOption));
                 Serial.println("SWITCH SEC: " +String(displayswitchsec));
-                if(displayOption == 0){                  
+                //if(displayOption == 0){                  
                   Serial.println("Show Hr Min");
-                  DisplayTime(hour(t),minute(t),second(t));
+                  int _hour=0;
+                  if(hour(t)>12){
+                     _hour=hour(t)-12;
+                  }
+                  DisplayTime(_hour ,minute(t),second(t));
                   Serial.println("Switch Sec: " +String(displayswitchsec));
                   if(second(t)== displayswitchsec){
                     Serial.println("In sec switch");
@@ -111,7 +115,7 @@ void loop() {
                     displayOption=1;
                     displayswitchsec=calculateDisplayTime(second(t));                   
                   }
-                }else{
+                /*}else{
                   Serial.println("Show Min Sec");                          
                   DisplayTime(0,second(t),0);                             
                   if(second(t)== displayswitchsec){
@@ -120,7 +124,7 @@ void loop() {
                     displayOption=0;
                     displayswitchsec=calculateDisplayTime(second(t));                    
                   }
-                } 
+                } */
                 
                 if(hour(t)>6 && hour(t)<=18){
                     Serial.println("Time: "+String(hour(t))+", Brightness:15"); 
