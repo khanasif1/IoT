@@ -106,6 +106,8 @@ void loop() {
                   int _hour=0;
                   if(hour(t)>12){
                      _hour=hour(t)-12;
+                  }else{
+                      _hour=hour(t);
                   }
                   DisplayTime(_hour ,minute(t),second(t));
                   Serial.println("Switch Sec: " +String(displayswitchsec));
