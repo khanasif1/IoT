@@ -15,7 +15,10 @@
 #include "WifiHelper.h"
 #include "HttpHelper.h"
 
-
+/*3v  - PhotoCell Leg1
+  A0  - PhotoCell Leg2 + Resister Leg 1
+  GND - Resister Leg 2
+*/
 char* host = "40.126.229.114";
 const int httpPort = 80;
 String url = "/KafkaPost";
