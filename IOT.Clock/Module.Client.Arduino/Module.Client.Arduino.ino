@@ -12,7 +12,7 @@
 #include <SPFD5408_TouchScreen.h>
 #include <ArduinoJson.h>
 #include <Wire.h>
-#include "Sodaq_DS3231.h"
+//#include "Sodaq_DS3231.h"
 // *** SPFD5408 change -- End
 
 // The control pins for the LCD can be assigned to any digital or
@@ -66,9 +66,9 @@ void setup(void) {
   
   Serial.begin(9600);
    Wire.begin();
-   rtc.begin();
+   /*rtc.begin();
   DateTime dt(2017, 04, 02, 12, 59, 30, 0);
-  rtc.setDateTime(dt);
+  rtc.setDateTime(dt);*/
   progmemPrintln(PSTR("TFT LCD test"));
 
 #ifdef USE_ADAFRUIT_SHIELD_PINOUT
@@ -116,7 +116,7 @@ void loop(void) {
 
 void PrintTime(){
    
-    DateTime now = rtc.now(); 
+    /*DateTime now = rtc.now(); 
     Serial.print(String(now.year())+'/'+String(now.month())+'/'+String(now.date())+' '+String(now.hour())+':'+String(now.minute())+':'+String(now.second())+' '+weekDay[now.dayOfWeek()]);
     Serial.println(); 
     rtc.convertTemperature();             //convert current temperature into registers
@@ -141,9 +141,18 @@ void PrintTime(){
     String Seconds = FormatText(now.second());    
     String Day = FormatText(now.date());
     String Month = FormatText(now.month());
-    String Year = FormatText(now.year());
-    SetDateTime(Hours,Minutes,Seconds,Day,Month,Year,Temp,AMPM);
-    delay(1000);
+    String Year = FormatText(now.year());*/
+
+   String Hours = "10";
+   String Minutes= "10";
+   String Seconds= "10";
+   String Day= "10";
+   String Month= "10";
+   String Year= "19";
+   String Temp= "22";
+   String AMPM= "am";
+   SetDateTime(Hours,Minutes,Seconds,Day,Month,Year,Temp,AMPM);
+   delay(1000);
    
 }
   

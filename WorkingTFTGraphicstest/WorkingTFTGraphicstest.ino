@@ -161,7 +161,7 @@ unsigned long testText() {
   tft.println();
   tft.setTextColor(GREEN);
   tft.setTextSize(5);
-  tft.println("Groop");
+  tft.println("Asif Khan");
   tft.setTextSize(2);
   tft.println("I implore thee,");
   tft.setTextSize(1);
@@ -391,4 +391,3 @@ void progmemPrintln(const char *str) {
   progmemPrint(str);
   Serial.println();
 }
-
