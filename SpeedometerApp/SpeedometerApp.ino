@@ -51,7 +51,7 @@ String jsonMessage = "";         // a string to hold incoming data
 boolean IsMessageComplete = false;  // whether the string is complete
 int i=0;
 
-String G_Hours;String G_Minutes;String G_Seconds;String G_AMPM;String G_Date; String G_Temp;
+String G_inch;String G_cms;
 
 void setup(void) {
   
@@ -97,8 +97,7 @@ void progmemPrintln(const char *str) {
   Serial.println();
 }
 void loop(void) { 
-     Distance();
-     //PrintTime();  
+     Distance();     
 }
 void Distance(){
    long duration, inches, cm;
@@ -119,7 +118,7 @@ void Distance(){
    Serial.print(cm);
    Serial.print("cm");
    Serial.println();
-   SetDateTime(String(inches),String(cm),"");
+   ShowDistance(String(inches),String(cm));
    delay(100);
 }
 
@@ -131,41 +130,29 @@ long microsecondsToCentimeters(long microseconds) {
    return microseconds / 29 / 2;
 }
 
-int min=2000;
-int hr =2000;
-void PrintTime(){
-   String Hours = String(hr);
-   String Minutes= String(min);  
-   String AMPM= "am";
-   SetDateTime(Hours,Minutes,AMPM);
-   //delay(1000);
-   min++;
-   hr++;
-   Serial.println(String(min));
-}
 
- void SetDateTime(String _Hours,String _Minutes,String _AMPM) {
-    Serial.print("in TFT:"+_Hours+" "+_Minutes+" "+_AMPM);
+ void ShowDistance(String _inch,String _cms) {
+    Serial.print("in TFT:"+_inch+" "+_cms);
    
-    if(_Hours !=""){
-      if(G_Hours != _Hours){
-        CleanText(0, 50, 8, G_Hours+"m");
-        G_Hours = _Hours;
+    if(_inch !=""){
+      if(G_inch != _inch){
+        CleanText(0, 50, 8, G_inch+"in");
+        G_inch = _inch;
         tft.setCursor(0, 50);
         tft.setTextColor(RED);
         tft.setTextSize(8);
-        tft.println(_Hours+"m");      
+        tft.println(_inch+"in");      
       }       
     }
 
-    if(_Minutes != ""){       
-      if(G_Minutes != _Minutes){  
-       CleanText(0, 140, 8, G_Minutes+"cm");
-       G_Minutes = _Minutes;
+    if(_cms != ""){       
+      if(G_cms != _cms){  
+       CleanText(0, 140, 8, G_cms+"cm");
+       G_cms = _cms;
        tft.setCursor(0, 140);
        tft.setTextColor(RED);
        tft.setTextSize(8);
-       tft.println(_Minutes+"cm");    
+       tft.println(_cms+"cm");    
       }       
     }   
   }
