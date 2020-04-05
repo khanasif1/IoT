@@ -4,8 +4,6 @@
 #include <EthernetClient.h>
 #include <EthernetServer.h>
 #include <EthernetUdp.h>
-
-
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>  
@@ -19,7 +17,10 @@
   A0  - PhotoCell Leg2 + Resister Leg 1
   GND - Resister Leg 2
 */
-char* host = "40.126.229.114";
+const int pingPin = 13; // Yello Trigger Pin of Ultrasonic Sensor
+const int echoPin = 12; //Green Echo Pin of Ultrasonic Sensor
+
+char* host = "13.72.241.182";
 const int httpPort = 80;
 String url = "/KafkaPost";
 
@@ -45,7 +46,7 @@ void loop() {
        long randNumber = random(0, 500); 
        String data="{";
         data= data+"'_id':'0',";
-        data= data+"'_message':'"+randNumber+"',";
+        data= data+"'_message':'"+photocellReading+"',";
         data= data+"'_timestamp':'2016-10-07T14:21:51.3883469+11:00',";
         data= data+"}";        
       
@@ -55,8 +56,8 @@ void loop() {
         Serial.println("connection failed");
         return;
       }
-      Serial.println("API Connected. Start POST");  
-      /*client.print(String("POST ") + url + " HTTP/1.1\r\n" +
+      Serial.println("API Connected. Start POST");
+      client.print(String("POST ") + url + " HTTP/1.1\r\n" +
                  "Host: " + host + "\r\n" +
                  //"Connection: close\r\n" +
                  "Content-Type: application/json\r\n" +
@@ -74,5 +75,5 @@ void loop() {
      while(client.available()){
         String line = client.readStringUntil('\r');        
         Serial.print("Post Response : /c"+line);
-      }*/
+      }
 }
