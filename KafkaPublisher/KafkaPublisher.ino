@@ -20,7 +20,7 @@
 const int pingPin = 13; // Yello Trigger Pin of Ultrasonic Sensor
 const int echoPin = 12; //Green Echo Pin of Ultrasonic Sensor
 
-char* host = "13.72.241.182";
+char* host = "corpkafka.australiaeast.cloudapp.azure.com";
 const int httpPort = 80;
 String url = "/KafkaPost";
 
@@ -40,7 +40,7 @@ void setup() {
 void loop() {
        Serial.println("In Loop");                       
        
-       photocellReading = analogRead(photocellPin);
+       photocellReading = analogRead(photocellPin)/2;
        Serial.println("Light : "+photocellReading);
         
        long randNumber = random(0, 500); 
