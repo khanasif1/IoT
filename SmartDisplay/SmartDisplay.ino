@@ -73,7 +73,7 @@ void loop() {
       Serial.println("In Loop"); 
                 
       //Serial.println("Display type timer interval : "+String(millis()- displayTypeTimer));
-      if(displayTypeTimer == 0){
+      /*if(displayTypeTimer == 0){
         
         Serial.println("First run pulling display type");
         DynamicJsonBuffer jsonBuffer(2000);
@@ -102,7 +102,7 @@ void loop() {
         //Post Healthcheck ping
         //HealthCheckHelper.PingHealth("khanasif1%40gmail.com");
       }     
-       if(displayType== 1 ){
+       if(displayType== 1 ){*/
                 Serial.println("In Clock");
 
                 float celsius;float fahrenheit;
@@ -160,7 +160,7 @@ void loop() {
                   dots = !dots;
                 }               
               Serial.println(String(hour(t))+" : "+String(minute(t))+" : "+String(second(t))); 
-       }
+       /*}
        else if(displayType== 2 ){
               Serial.println("Crypto timer interval : "+String(millis()- cryptoTimer));
               if(cryptoTimer == 0){
@@ -191,7 +191,7 @@ void loop() {
                 ScrollText(displayText);
         }else{
                   ScrollText("\x02 Display Type not selected \x02");
-        }  
+        } */ 
 }
 
 void DisplayTime(int h,int m,int s){
