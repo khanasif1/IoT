@@ -195,8 +195,7 @@ void loop() {
 }
 
 void DisplayTime(int h,int m,int s){
-
-
+    
     matrix.fillScreen(LOW);
     int y = (matrix.height() - 8) / 2;
     
@@ -206,14 +205,19 @@ void DisplayTime(int h,int m,int s){
           String min1; String min2;
         
         if(h>9){
-           if(h>9 && h<20){
-             hour1 = String (h);
-             hour2 = String (h - 10);
-           }
-           else{
-             hour1 = String (h);
-             hour2 = String (h - 20);           
-           }
+             if(h>9 && h<=12){
+              hour1 = String (h);
+              hour2 = String (h - 10);
+              }else{
+              h=h-12;
+              if(h<10){
+               hour1 = String (0);
+               hour2 = String (h); 
+               }else{
+               hour1 = String (h);
+               hour2 = String (h-10);                 
+               }                 
+             }                  
           }else{          
            hour1 = String (0);
            hour2 = String (h);
